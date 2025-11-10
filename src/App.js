@@ -1,25 +1,25 @@
-import logo from './logo.svg';
 import './App.css';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Dashboard from "./pages/Dashboard";
+import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community'; 
+import CssBaseline from '@mui/material/CssBaseline';
 
 function App() {
+  ModuleRegistry.registerModules([AllCommunityModule]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <CssBaseline />
+      <Container maxWidth="md" style={{ marginTop: '2rem' }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          AG Grid React Dashboard
+        </Typography>
+        <Dashboard />
+      </Container>
+    </>
   );
+
 }
 
 export default App;
