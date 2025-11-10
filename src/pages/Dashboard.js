@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { themeBalham } from 'ag-grid-community';
 import {
@@ -7,11 +7,7 @@ import {
   Typography,
   Stack,
   TextField,
-  AppBar,
-  Toolbar,
-  Container,
 } from "@mui/material";
-
 
 const uniqueUsernames = [
   "SilverFalcon", "BlueTiger", "GoldenEagle", "CrimsonWolf",
@@ -25,7 +21,6 @@ const countries = [
   "United Kingdom", "France", "Mexico", "New Zealand"
 ];
 
-// Function to get unique username by index or randomly
 const getUsername = (index) => {
   if (index < uniqueUsernames.length) {
     return uniqueUsernames[index];
@@ -33,7 +28,6 @@ const getUsername = (index) => {
   return uniqueUsernames[Math.floor(Math.random() * uniqueUsernames.length)];
 };
 
-// Function to get random country name
 const getCountry = () => {
   return countries[Math.floor(Math.random() * countries.length)];
 };
@@ -53,8 +47,10 @@ const generateRows = (count) => {
 
 const Dashboard = () => {
   const myTheme = themeBalham.withParams({ accentColor: 'red' });
+
   const [rowData, setRowData] = useState(generateRows(25));
   const [filterText, setFilterText] = useState("");
+  const gridRef = useRef();
 
   const addMoreRows = () => {
     const newRows = generateRows(rowData.length + 5).slice(rowData.length);
@@ -80,46 +76,65 @@ const Dashboard = () => {
     );
   }, [rowData, filterText]);
 
+  const createChart = () => {
+    if (!gridRef.current) return;
+
+    // Remove existing charts in the container
+    const chartContainer = document.querySelector('#myChartContainer');
+    if (chartContainer) {
+      chartContainer.innerHTML = '';
+    }
+
+    const params = {
+      cellRange: {
+        columns: ['country', 'age'],
+      },
+      chartType: 'groupedBar',
+      chartContainer: chartContainer,
+      aggFunc: 'avg',
+      processChartOptions: (params) => {
+        const opts = params.options;
+        opts.title.text = 'Average Age by Country';
+        opts.legendPosition = 'bottom';
+        return opts;
+      }
+    };
+
+    gridRef.current.api.createRangeChart(params);
+  };
+
 
   return (
     <>
-      <AppBar position="static" color="primary" enableColorOnDark>
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              User Management Dashboard
-          </Typography>
-          <Button variant="contained" color="primary" onClick={addMoreRows}>
-            Add 10 More Users
-          </Button>
-        </Toolbar>
-      </AppBar>
-
-      <Container maxWidth="md">
-        <Paper elevation={6} sx={{ marginTop: 4, padding: 3 }}>
-          <Stack spacing={2}>
-            <TextField
-              label="Search by Username or Country"
-              variant="outlined"
-              value={filterText}
-              onChange={onFilterChange}
-            />
-            <div className="ag-theme-alpine" style={{ height: 600, width: "100%" }}>
-              <AgGridReact
-                rowData={filteredRows}
-                columnDefs={columnDefs}
-                pagination={true}
-                paginationPageSize={10}
-                domLayout="autoHeight"
-                animateRows
-                theme={myTheme}
-              />
-            </div>
-          </Stack>
-        </Paper>
-      </Container>
+      <Typography variant="h4" gutterBottom>User Management Dashboard</Typography>
+      <Stack direction="row" spacing={2} alignItems="center" marginBottom={2}>
+        <TextField
+          label="Filter by Name or Country"
+          variant="outlined"
+          size="small"
+          value={filterText}
+          onChange={onFilterChange}
+        />
+        <Button variant="contained" onClick={addMoreRows}>Add 5 More Users</Button>
+        <Button variant="outlined" onClick={createChart}>Show Age by Country Chart</Button>
+      </Stack>
+      <div className="ag-theme-balham" style={{ height: 400, width: '100%' }}>
+        <AgGridReact
+          ref={gridRef}
+          rowData={filteredRows}
+          columnDefs={columnDefs}
+          enableCharts={true}
+          defaultColDef={{ flex: 1, minWidth: 100, filter: true, sortable: true }}
+          pagination={true}
+          paginationPageSize={20}
+          domLayout="autoHeight"
+          animateRows={true}
+          theme={myTheme}
+        />
+      </div>
+      <Paper id="myChartContainer" style={{ marginTop: 20, height: 400, width: '100%', padding: 10 }} />
     </>
   );
-
 };
 
 export default Dashboard;
