@@ -51,6 +51,7 @@ const Dashboard = () => {
   const [rowData, setRowData] = useState(generateRows(25));
   const [filterText, setFilterText] = useState("");
   const gridRef = useRef();
+  const [showChart, setShowChart] = useState(false);
 
   const addMoreRows = () => {
     const newRows = generateRows(rowData.length + 5).slice(rowData.length);
@@ -85,6 +86,7 @@ const Dashboard = () => {
       chartContainer.innerHTML = '';
     }
 
+    setShowChart(true)
     const params = {
       cellRange: {
         columns: ['country', 'age'],
@@ -133,7 +135,9 @@ const Dashboard = () => {
         />
 
       </div>
-      <Paper id="myChartContainer" style={{ marginTop: 20, height: 400, width: '100%', padding: 10 }} />
+      { showChart &&
+        <Paper id="myChartContainer" style={{ marginTop: 20, height: 400, width: '100%', padding: 10 }} />
+      }
     </>
   );
 };
