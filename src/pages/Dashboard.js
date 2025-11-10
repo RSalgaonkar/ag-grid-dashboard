@@ -54,6 +54,8 @@ const Dashboard = () => {
   const gridRef = useRef();
   const chartContainerRef = useRef(null);
   const [chartType, setChartType] = useState('groupedBar');
+  const [debouncedFilterText, setDebouncedFilterText] = useState("");
+  const debounceTimerRef = useRef(null);
 
   useEffect(() => {
     if (showChart && gridRef.current && chartContainerRef.current) {
@@ -86,16 +88,26 @@ const Dashboard = () => {
   ]);
 
   const onFilterChange = (e) => {
-    setFilterText(e.target.value);
-  };
+  const value = e.target.value;
+  setFilterText(value);
+
+  if (debounceTimerRef.current) {
+    clearTimeout(debounceTimerRef.current);
+  }
+
+  debounceTimerRef.current = setTimeout(() => {
+    setDebouncedFilterText(value);
+  }, 300); // debounce delay 300ms
+};
+
 
   const filteredRows = useMemo(() => {
-    if (!filterText) return rowData;
+    if (!debouncedFilterText) return rowData;
     return rowData.filter(row =>
-      row.name.toLowerCase().includes(filterText.toLowerCase()) ||
-      row.country.toLowerCase().includes(filterText.toLowerCase())
+      row.name.toLowerCase().includes(debouncedFilterText.toLowerCase()) ||
+      row.country.toLowerCase().includes(debouncedFilterText.toLowerCase())
     );
-  }, [rowData, filterText]);
+  }, [rowData, debouncedFilterText]);
 
   return (
     <>
