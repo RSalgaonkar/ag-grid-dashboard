@@ -124,13 +124,14 @@ const Dashboard = () => {
           rowData={filteredRows}
           columnDefs={columnDefs}
           enableCharts={true}
+          rowSelection="multiple"
           defaultColDef={{ flex: 1, minWidth: 100, filter: true, sortable: true }}
+          animateRows={true}
           pagination={true}
           paginationPageSize={20}
-          domLayout="autoHeight"
-          animateRows={true}
           theme={myTheme}
         />
+
       </div>
       <Paper id="myChartContainer" style={{ marginTop: 20, height: 400, width: '100%', padding: 10 }} />
     </>
