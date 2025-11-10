@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { themeBalham } from 'ag-grid-community';
-import Paper from "@mui/material/Paper";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
+import {
+  Paper,
+  Button,
+  Typography,
+  Stack,
+  TextField,
+  AppBar,
+  Toolbar,
+  Container,
+} from "@mui/material";
+
 
 const uniqueUsernames = [
   "SilverFalcon", "BlueTiger", "GoldenEagle", "CrimsonWolf",
@@ -47,6 +54,7 @@ const generateRows = (count) => {
 const Dashboard = () => {
   const myTheme = themeBalham.withParams({ accentColor: 'red' });
   const [rowData, setRowData] = useState(generateRows(25));
+  const [filterText, setFilterText] = useState("");
 
   const addMoreRows = () => {
     const newRows = generateRows(rowData.length + 5).slice(rowData.length);
@@ -60,29 +68,58 @@ const Dashboard = () => {
     { field: "country", headerName: "Country", sortable: true, filter: true },
   ]);
 
+  const onFilterChange = (e) => {
+    setFilterText(e.target.value);
+  };
+
+  const filteredRows = useMemo(() => {
+    if (!filterText) return rowData;
+    return rowData.filter(row =>
+      row.name.toLowerCase().includes(filterText.toLowerCase()) ||
+      row.country.toLowerCase().includes(filterText.toLowerCase())
+    );
+  }, [rowData, filterText]);
+
+
   return (
-    <Paper elevation={4} style={{ padding: 20, marginTop: 20 }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5" component="h2">
-          User Data Table
-        </Typography>
-        <Button variant="contained" color="primary" onClick={addMoreRows}>
-          Add More Rows
-        </Button>
-      </Stack>
+    <>
+      <AppBar position="static" color="primary" enableColorOnDark>
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              User Management Dashboard
+          </Typography>
+          <Button variant="contained" color="primary" onClick={addMoreRows}>
+            Add 10 More Users
+          </Button>
+        </Toolbar>
+      </AppBar>
 
-      <div className="ag-theme-alpine" style={{ height: 500, width: "100%" }}>
-        <AgGridReact
-          rowData={rowData}
-          columnDefs={columnDefs}
-          pagination={true}
-          paginationPageSize={15}
-          theme={myTheme}
-        />
-      </div>
-    </Paper>
-
+      <Container maxWidth="md">
+        <Paper elevation={6} sx={{ marginTop: 4, padding: 3 }}>
+          <Stack spacing={2}>
+            <TextField
+              label="Search by Username or Country"
+              variant="outlined"
+              value={filterText}
+              onChange={onFilterChange}
+            />
+            <div className="ag-theme-alpine" style={{ height: 600, width: "100%" }}>
+              <AgGridReact
+                rowData={filteredRows}
+                columnDefs={columnDefs}
+                pagination={true}
+                paginationPageSize={10}
+                domLayout="autoHeight"
+                animateRows
+                theme={myTheme}
+              />
+            </div>
+          </Stack>
+        </Paper>
+      </Container>
+    </>
   );
+
 };
 
 export default Dashboard;
