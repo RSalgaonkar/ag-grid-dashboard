@@ -53,6 +53,7 @@ const Dashboard = () => {
   const [showChart, setShowChart] = useState(false);
   const gridRef = useRef();
   const chartContainerRef = useRef(null);
+  const [chartType, setChartType] = useState('groupedBar');
 
   useEffect(() => {
     if (showChart && gridRef.current && chartContainerRef.current) {
@@ -60,7 +61,7 @@ const Dashboard = () => {
 
       gridRef.current.api.createRangeChart({
         cellRange: { columns: ['country', 'age'] },
-        chartType: 'groupedBar',
+        chartType: chartType,
         chartContainer: chartContainerRef.current,
         aggFunc: 'avg',
         processChartOptions: (params) => {
@@ -70,7 +71,7 @@ const Dashboard = () => {
         }
       });
     }
-  }, [showChart]);
+  }, [showChart, chartType]);
 
   const addMoreRows = () => {
     const newRows = generateRows(rowData.length + 5).slice(rowData.length);
@@ -107,9 +108,22 @@ const Dashboard = () => {
           value={filterText}
           onChange={onFilterChange}
         />
+        <TextField
+          select
+          label="Chart Type"
+          value={chartType}
+          onChange={(e) => setChartType(e.target.value)}
+          SelectProps={{
+            native: true,
+          }}
+        >
+          <option value="groupedBar">Grouped Bar Chart</option>
+          <option value="pie">Pie Chart</option>
+          <option value="line">Line Chart</option>
+          <option value="stackedBar">Stacked Bar Chart</option>
+        </TextField>
+
         <Button variant="contained" onClick={addMoreRows}>Add 5 More Users</Button>
-        {/* <Button variant="outlined" onClick={createChart}>Show Age by Country Chart</Button>
-         */}
         <Button  variant="outlined" onClick={() => setShowChart(true)}>Show Age by Country Chart</Button>
 
       </Stack>
