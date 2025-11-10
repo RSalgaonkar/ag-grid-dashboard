@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { themeBalham } from 'ag-grid-community';
 import {
@@ -50,8 +50,27 @@ const Dashboard = () => {
 
   const [rowData, setRowData] = useState(generateRows(25));
   const [filterText, setFilterText] = useState("");
-  const gridRef = useRef();
   const [showChart, setShowChart] = useState(false);
+  const gridRef = useRef();
+  const chartContainerRef = useRef(null);
+
+  useEffect(() => {
+    if (showChart && gridRef.current && chartContainerRef.current) {
+      chartContainerRef.current.innerHTML = '';
+
+      gridRef.current.api.createRangeChart({
+        cellRange: { columns: ['country', 'age'] },
+        chartType: 'groupedBar',
+        chartContainer: chartContainerRef.current,
+        aggFunc: 'avg',
+        processChartOptions: (params) => {
+          params.options.title.text = 'Average Age by Country';
+          params.options.legendPosition = 'bottom';
+          return params.options;
+        }
+      });
+    }
+  }, [showChart]);
 
   const addMoreRows = () => {
     const newRows = generateRows(rowData.length + 5).slice(rowData.length);
@@ -77,35 +96,6 @@ const Dashboard = () => {
     );
   }, [rowData, filterText]);
 
-  const createChart = () => {
-    if (!gridRef.current) return;
-
-    // Remove existing charts in the container
-    const chartContainer = document.querySelector('#myChartContainer');
-    if (chartContainer) {
-      chartContainer.innerHTML = '';
-    }
-
-    setShowChart(true)
-    const params = {
-      cellRange: {
-        columns: ['country', 'age'],
-      },
-      chartType: 'groupedBar',
-      chartContainer: chartContainer,
-      aggFunc: 'avg',
-      processChartOptions: (params) => {
-        const opts = params.options;
-        opts.title.text = 'Average Age by Country';
-        opts.legendPosition = 'bottom';
-        return opts;
-      }
-    };
-
-    gridRef.current.api.createRangeChart(params);
-  };
-
-
   return (
     <>
       <Typography variant="h4" gutterBottom>User Management Dashboard</Typography>
@@ -118,7 +108,10 @@ const Dashboard = () => {
           onChange={onFilterChange}
         />
         <Button variant="contained" onClick={addMoreRows}>Add 5 More Users</Button>
-        <Button variant="outlined" onClick={createChart}>Show Age by Country Chart</Button>
+        {/* <Button variant="outlined" onClick={createChart}>Show Age by Country Chart</Button>
+         */}
+        <Button  variant="outlined" onClick={() => setShowChart(true)}>Show Age by Country Chart</Button>
+
       </Stack>
       <div className="ag-theme-balham" style={{ height: 400, width: '100%' }}>
         <AgGridReact
@@ -126,7 +119,7 @@ const Dashboard = () => {
           rowData={filteredRows}
           columnDefs={columnDefs}
           enableCharts={true}
-          rowSelection="multiple"
+          // rowSelection="multiple"
           defaultColDef={{ flex: 1, minWidth: 100, filter: true, sortable: true }}
           animateRows={true}
           pagination={true}
@@ -135,9 +128,7 @@ const Dashboard = () => {
         />
 
       </div>
-      { showChart &&
-        <Paper id="myChartContainer" style={{ marginTop: 20, height: 400, width: '100%', padding: 10 }} />
-      }
+      {showChart && <Paper ref={chartContainerRef} style={{ height: 400, marginTop: 20, width: '100%' }} />}
     </>
   );
 };
